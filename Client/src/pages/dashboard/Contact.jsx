@@ -15,7 +15,7 @@ export default function Contact() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/v1/get-contact', {
+      const response = await fetch('/api/v1/get-contact', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export default function Contact() {
   };
 
   const handleDelete = async (id) => {
-        fetch(`http://localhost:3001/api/v1/delete-contact/${id}`, {
+        fetch(`/api/v1/delete-contact/${id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

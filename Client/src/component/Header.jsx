@@ -35,7 +35,7 @@ export default function Header() {
         // Show loading state
         setSubmitting(true);
 
-        fetch('http://localhost:3001/api/v1/create-contact', {
+        fetch('/api/v1/create-contact', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
