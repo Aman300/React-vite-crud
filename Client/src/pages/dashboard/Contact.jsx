@@ -2,12 +2,18 @@ import React from 'react'
 import Navbar from '../../component/Navbar'
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useFormik } from 'formik';
+
 
 export default function Contact() {
 
   const navigate = useNavigate();
 
   const [dataContact, setDataContact] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [isUpdateData, setIsUpdateData] = React.useState(false);
 
   React.useEffect(() => {
     fetchData();
@@ -39,8 +45,8 @@ export default function Contact() {
           .then((res) => res.json())
           .then((data) => {
             if (data.status) {
-              alert(data.message);
-              alert("hi")
+              toast.success(data.message);
+              fetchData();
             } else {
               alert(data.message);
             }
@@ -54,14 +60,17 @@ export default function Contact() {
 
 const handleUpdate = async (id) => {
   try{
-    let data = await axios.get(`http://localhost:3001/api/v1/get-contact/${id}`);
+    let data = await axios.get(`/api/v1/get-single-contact/${id}`);
     console.log(data);
     if(data.data.status){
-      alert(data.data.message)
-      window.location.reload();
+      setIsUpdateData(true);
+      formik.setFieldValue('contactName', data.data.data.contactName);
+      formik.setFieldValue('contactNumber', data.data.data.contactNumber);
+      formik.setFieldValue('address', data.data.data.address);
+      formik.setFieldValue('id', data.data.data._id);
     }
     else{
-      alert(data.data.message)
+      toast.error(data.data.message);
     }
 
    }catch(e){
@@ -69,9 +78,40 @@ const handleUpdate = async (id) => {
    }
 }
 
+const formik = useFormik({
+  initialValues: {
+    contactName: '',
+    contactNumber: '',
+    address: '',
+    id: ''
+  },
+  // validate, // Make sure to define the 'validate' function
+  onSubmit: async (values, { setSubmitting, }) => {
+      // Show loading state
+      setSubmitting(true);
+      try {
+        let data = await axios.put(`/api/v1/update-contact/${formik.values.id}`, values);
+        if (data.data.status) {
+          toast.success(data.data.message);
+          fetchData();
+        } else {
+          toast.error(data.data.message);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      }
+      // Show success message after submitting
+      setSubmitting(false);
+      setIsUpdateData(false);
+      formik.resetForm();
+
+  },
+});
+
   return (
     <>
     <Navbar />
+
     <div className="container mx-auto px-4 sm:px-8">
     <div className="py-8">
     <div className="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
@@ -94,6 +134,7 @@ const handleUpdate = async (id) => {
         </tr>
       </thead>
     <tbody className="bg-white">
+
     {dataContact.map((item, index) => (
           <tr key={index}>
             <td className="py-4 px-6 border-b border-gray-200">{item.contactName}</td>
@@ -123,6 +164,45 @@ const handleUpdate = async (id) => {
 
 
     </div>
+
+    {/* get single data form */}
+    {/* need to open in diglog this form */}
+    {isUpdateData && (
+    <div className="flex justify-center items-center mt-20">
+          <form className="xl:w-1/3 px-5"  onSubmit={formik.handleSubmit}>
+            <input id="contactName" name='contactName' value={formik.values.contactName} onChange={formik.handleChange}
+              className={`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border ${formik.errors.contactName ? "border-red-500" : "border-gray-300"} placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5`}
+              type="text"
+              placeholder="Contact name"
+            />
+            {formik.errors.contactName && <div className="text-red-500">{formik.errors.contactName}</div>}
+
+            <input id="contactNumber" name='contactNumber' value={formik.values.contactNumber} onChange={formik.handleChange}
+              className={`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border ${formik.errors.contactNumber ? "border-red-500" : "border-gray-300"} placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5`}
+              type="number"
+              placeholder="Contact number"
+            />
+            {formik.errors.contactNumber && <div className="text-red-500">{formik.errors.contactNumber}</div>}
+
+            {/*  */}
+
+            <textarea id="address" name='address' value={formik.values.address} onChange={formik.handleChange}
+              className={`w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border ${formik.errors.address ? "border-red-500" : "border-gray-300"} placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5`}
+              type="text"
+              placeholder="Address"
+            />
+            {formik.errors.address && <div className="text-red-500 ">{formik.errors.address}</div>}
+
+            {/*  */}
+
+            <button type='submit' className="mt-5 tracking-wide font-semibold bg-indigo-500 text-gray-100 w-full py-4 rounded-lg hover:bg-indigo-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none" disabled={formik.isSubmitting}>
+
+            {formik.isSubmitting ? 'Updating...' : 'Update'}
+            </button>
+          </form>
+      </div>
+    )}
+
 
     </>
   )

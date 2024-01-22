@@ -2,6 +2,9 @@ import "./Style.css";
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import axios from 'axios';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const validate = values => {
   const errors = {};
@@ -31,29 +34,23 @@ export default function Header() {
       address: '',
     },
     validate, // Make sure to define the 'validate' function
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting, }) => {
         // Show loading state
         setSubmitting(true);
+        try {
+          let data = await axios.post('/api/v1/create-contact', values);
+          if (data.data.status) {
+            toast.success(data.data.message);
+            navigate('/contact-list');
+          } else {
+            toast.error(data.data.message);
+          }
+        } catch (error) {
+          alert(error.message);
+        }
+        // Show success message after submitting
+        setSubmitting(false);
 
-        fetch('/api/v1/create-contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(values),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status) {
-              alert(data.message);
-              navigate('/contact-list');
-            } else {
-              alert(data.message);
-            }
-          })
-          .catch((err) => {
-            alert(err.message);
-          });
     },
   });
 
