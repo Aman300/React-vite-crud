@@ -9,6 +9,7 @@ const {
   updateContact,
   deleteContact,
   getSingleContact,
+  searchContact,
 } = require("../Controllers/contact");
 
 router.post("/create-user", userController.create_user);
@@ -19,5 +20,6 @@ router.get("/get-contact", getContact);
 router.delete("/delete-contact/:id", deleteContact);
 router.get("/get-single-contact/:id", getSingleContact);
 router.put("/update-contact/:id", updateContact);
+router.get("/search-contact/:search", searchContact);
 
 module.exports = router;
